@@ -35,4 +35,4 @@ docker run -p 8080:8080 harness-shop
 3. **Pipeline:** the PR triggers the Harness pipeline (scan → test → build → deploy). Refresh the URL to see the red holiday version.
 4. **Reset:** close the PR without merging, delete the branch, and re-run the pipeline on `main` so the URL shows the baseline again.
 
-Pipeline and connector setup are added in the next step.
+Full step-by-step instructions, including the reset after each demo, are in [`docs/DEMO_RUNBOOK.md`](docs/DEMO_RUNBOOK.md). The pipeline definition is in [`.harness/pipeline.yaml`](.harness/pipeline.yaml) (reference copy; the live pipeline is stored in Harness).
