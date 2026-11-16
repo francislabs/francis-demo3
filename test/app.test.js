@@ -29,6 +29,13 @@ test('home page renders headline and products', async () => {
   for (const p of config.products) assert.ok(html.includes(p.name));
 });
 
+test('banner is yellow and mentions GSI Store', async () => {
+  const html = await (await fetch(`${base}/`)).text();
+  assert.strictEqual(config.themeColor, '#FFD700');
+  assert.ok(html.includes('--accent: #FFD700'));
+  assert.ok(html.includes('GSI Store'));
+});
+
 test('info endpoint exposes version', async () => {
   const info = await (await fetch(`${base}/api/info`)).json();
   assert.ok(info.version);

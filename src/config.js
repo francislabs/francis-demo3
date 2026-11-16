@@ -8,10 +8,10 @@
 
 module.exports = {
   appName: 'Harness Shop',
-  headline: 'Welcome to Harness Shop',
+  headline: 'Welcome to GSI Store',
   tagline: 'Built, secured and deployed to GKE by Harness',
   // Accent colour for the banner (any CSS colour)
-  themeColor: '#0063F7',
+  themeColor: '#FFD700',
   // Products shown on the home page
   products: [
     { name: 'Pipeline Hoodie', price: 49 },
