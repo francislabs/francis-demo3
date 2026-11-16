@@ -1,6 +1,6 @@
 # Harness Shop — GKE demo app
 
-A tiny, dependency-free Node.js web app used to demo how Harness **builds, secures and deploys** an application to GKE, and how a Jira story becomes a pull request (via Cursor) that triggers the pipeline.
+A small Node.js (Express) web app used to demo how Harness **builds, secures and deploys** an application to GKE, and how a Jira story becomes a pull request (via Cursor) that triggers the pipeline.
 
 ## What's in here
 
