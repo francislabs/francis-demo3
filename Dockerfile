@@ -8,7 +8,8 @@ ENV NODE_ENV=production \
     GIT_SHA=${GIT_SHA}
 
 WORKDIR /app
-COPY package.json ./
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 COPY src ./src
 
 # Run as the non-root user that ships with the node image

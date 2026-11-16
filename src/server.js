@@ -1,5 +1,6 @@
 const http = require('http');
 const os = require('os');
+const express = require('express');
 const config = require('./config');
 const { renderPage } = require('./page');
 
@@ -12,37 +13,27 @@ function buildInfo() {
   };
 }
 
-function createServer() {
-  return http.createServer((req, res) => {
-    const url = new URL(req.url, 'http://localhost');
+function createApp() {
+  const app = express();
+  app.disable('x-powered-by');
 
-    if (url.pathname === '/healthz') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ status: 'ok' }));
-    }
-
-    if (url.pathname === '/api/info') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify(buildInfo()));
-    }
-
-    if (url.pathname === '/api/products') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify(config.products));
-    }
-
-    if (url.pathname === '/') {
-      res.writeHead(200, {
-        'Content-Type': 'text/html; charset=utf-8',
-        'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'DENY',
-      });
-      return res.end(renderPage(buildInfo()));
-    }
-
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ error: 'not found' }));
+  app.use((req, res, next) => {
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('X-Frame-Options', 'DENY');
+    next();
   });
+
+  app.get('/healthz', (req, res) => res.json({ status: 'ok' }));
+  app.get('/api/info', (req, res) => res.json(buildInfo()));
+  app.get('/api/products', (req, res) => res.json(config.products));
+  app.get('/', (req, res) => res.type('html').send(renderPage(buildInfo())));
+
+  app.use((req, res) => res.status(404).json({ error: 'not found' }));
+  return app;
+}
+
+function createServer() {
+  return http.createServer(createApp());
 }
 
 if (require.main === module) {
@@ -52,4 +43,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { createServer, buildInfo };
+module.exports = { createApp, createServer, buildInfo };
