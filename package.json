@@ -1,0 +1,15 @@
+{
+  "name": "harness-gke-demo",
+  "version": "1.0.0",
+  "description": "Sample app to demo build, secure and deploy to GKE with Harness",
+  "main": "src/server.js",
+  "private": true,
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

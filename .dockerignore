@@ -1,0 +1,9 @@
+.git
+.harness
+.cursor
+deploy
+docs
+scripts
+test
+node_modules
+*.md

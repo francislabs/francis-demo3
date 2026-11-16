@@ -1,0 +1,15 @@
+---
+description: How to implement a Jira story in this demo repo
+alwaysApply: true
+---
+
+This repo is a live demo of Harness CI/CD to GKE. When asked to implement a Jira story:
+
+1. Read the story (via the Jira/Atlassian MCP if connected, otherwise from the text pasted in chat).
+2. Create a branch named `feature/<JIRA-KEY>-<short-slug>` from `main`. Never commit to `main`.
+3. Make the change in `src/config.js` unless the story clearly needs code elsewhere.
+4. Keep `npm test` passing. If you add visible behaviour, add or update a test in `test/app.test.js`.
+5. Commit with a message that starts with the Jira key, e.g. `DEMO-1: Add holiday promo banner`.
+6. Push the branch and open a pull request into `main` titled `<JIRA-KEY>: <summary>`. Do not merge it.
+
+Do not change files under `deploy/` or `.harness/` for a feature story.

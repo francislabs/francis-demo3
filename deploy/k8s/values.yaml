@@ -1,0 +1,24 @@
+# Values consumed by the templates in ./templates.
+# The <+...> expressions are resolved by Harness CD at deploy time.
+
+name: harness-shop
+replicas: 2
+
+image: <+artifacts.primary.image>
+# Populated by Harness when the registry needs credentials; empty otherwise.
+dockercfg: <+artifacts.primary.imagePullSecret>
+
+appVersion: <+artifacts.primary.tag>
+
+containerPort: 8080
+servicePort: 80
+# LoadBalancer gives the app a public IP on GKE for the demo
+serviceType: LoadBalancer
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi
