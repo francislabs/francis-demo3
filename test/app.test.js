@@ -29,6 +29,13 @@ test('home page renders headline and products', async () => {
   for (const p of config.products) assert.ok(html.includes(p.name));
 });
 
+test('home page shows the holiday promo banner', async () => {
+  const html = await (await fetch(`${base}/`)).text();
+  assert.ok(config.promoBanner, 'promoBanner should be set');
+  assert.ok(html.includes(config.promoBanner));
+  assert.ok(html.includes('data-testid="promo"'));
+});
+
 test('info endpoint exposes version', async () => {
   const info = await (await fetch(`${base}/api/info`)).json();
   assert.ok(info.version);
