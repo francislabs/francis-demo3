@@ -1,7 +1,7 @@
 # Values consumed by the templates in ./templates.
 # The <+...> expressions are resolved by Harness CD at deploy time.
 
-name: harness-shop
+name: harness-shop-cosmos
 replicas: 2
 
 image: <+artifacts.primary.image>
@@ -14,6 +14,13 @@ containerPort: 8080
 servicePort: 80
 # LoadBalancer gives the app a public IP on GKE for the demo
 serviceType: LoadBalancer
+
+# Jira Service Management project that receives auto-raised incidents
+jira:
+  url: https://demolabsf.atlassian.net
+  email: demolabs.fmaz@outlook.com
+  project: DEV
+  apiToken: <+secrets.getValue("secret_9162_fmjira")>
 
 resources:
   requests:

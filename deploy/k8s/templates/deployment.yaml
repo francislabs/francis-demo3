@@ -10,6 +10,19 @@ data:
 type: kubernetes.io/dockercfg
 ---
 {{- end}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{.Values.name}}-jira
+  annotations:
+    harness.io/skip-versioning: "true"
+type: Opaque
+stringData:
+  JIRA_URL: "{{.Values.jira.url}}"
+  JIRA_EMAIL: "{{.Values.jira.email}}"
+  JIRA_PROJECT: "{{.Values.jira.project}}"
+  JIRA_API_TOKEN: "{{.Values.jira.apiToken}}"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -42,6 +55,9 @@ spec:
           env:
             - name: APP_VERSION
               value: "{{.Values.appVersion}}"
+          envFrom:
+            - secretRef:
+                name: {{.Values.name}}-jira
           readinessProbe:
             httpGet:
               path: /healthz

@@ -1,38 +1,25 @@
-# Harness Shop — GKE demo app
+# Harness Shop — self-healing demo (Harness + Jira + Cosmos + GitHub)
 
-A small Node.js (Express) web app used to demo how Harness **builds, secures and deploys** an application to GKE, and how a Jira story becomes a pull request (via Cursor) that triggers the pipeline.
+A small Node.js (Express) store deployed to GKE by Harness. **`main` intentionally contains a bug**: clicking **Add to cart** fails.
 
-## What's in here
+## The demo loop
 
-| Path | Purpose |
-|---|---|
-| `src/config.js` | Everything visible on the page. The demo Jira story only changes this file. |
-| `src/server.js`, `src/page.js` | HTTP server (`/`, `/healthz`, `/api/info`, `/api/products`) and HTML rendering |
-| `test/` | Unit tests (`npm test`, uses the built-in Node test runner) |
-| `Dockerfile` | Non-root `node:22-alpine` image, port 8080 |
-| `deploy/k8s/` | Harness-templated Kubernetes manifests (Deployment + LoadBalancer Service) |
-| `.cursor/rules/demo.mdc` | Tells Cursor how to turn a Jira story into a branch + PR |
-| `docs/JIRA_STORY.md` | The story to raise in Jira for the demo, plus the Cursor prompt |
+1. **Error.** A shopper clicks **Add to cart**. `POST /api/cart` fails, and the app auto-raises a **Jira Service Management incident** in project `DEV` (`src/incident.js`).
+2. **Cosmos fixes it.** Jira notifies Cosmos. The Cosmos PR Author reads the incident, fixes the bug, adds a regression test, and opens a PR (see `AGENTS.md`).
+3. **Harness ships it.** The PR triggers the Harness pipeline `harness-shop-cosmos-build-deploy`:
+   - scans, tests, and builds the image,
+   - waits for **approval**,
+   - deploys to GKE (namespace `cosmosdeploy`),
+   - smoke-tests Add to cart,
+   - resolves the incident.
+4. **Reset.** The `reset-cosmos-demo` pipeline closes the PR without merging, redeploys the buggy `main`, and closes the incident. That puts everything back for the next demo.
 
 ## Run locally
 
 ```bash
+npm ci
 npm test
 npm start            # http://localhost:8080
 ```
 
-Or with Docker:
-
-```bash
-docker build -t harness-shop .
-docker run -p 8080:8080 harness-shop
-```
-
-## Demo flow (summary)
-
-1. **Baseline:** pipeline deploys `main` to GKE; open the LoadBalancer URL and show the blue "Welcome to Harness Shop" page.
-2. **Change:** raise the story in `docs/JIRA_STORY.md` in Jira. In Cursor, ask it to implement the story; it creates `feature/<KEY>-...`, edits `src/config.js`, and opens a PR.
-3. **Pipeline:** the PR triggers the Harness pipeline (scan → test → build → deploy). Refresh the URL to see the red holiday version.
-4. **Reset:** close the PR without merging, delete the branch, and re-run the pipeline on `main` so the URL shows the baseline again.
-
-Full step-by-step instructions, including the reset after each demo, are in [`docs/DEMO_RUNBOOK.md`](docs/DEMO_RUNBOOK.md). The pipeline definition is in [`.harness/pipeline.yaml`](.harness/pipeline.yaml) (reference copy; the live pipeline is stored in Harness).
+Jira reporting is off unless `JIRA_URL`, `JIRA_EMAIL` and `JIRA_API_TOKEN` are set.

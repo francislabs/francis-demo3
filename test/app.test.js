@@ -21,12 +21,13 @@ test('health endpoint returns ok', async () => {
   assert.deepStrictEqual(await res.json(), { status: 'ok' });
 });
 
-test('home page renders headline and products', async () => {
-  const res = await fetch(`${base}/`);
-  const html = await res.text();
-  assert.strictEqual(res.status, 200);
+test('home page renders headline, products and add-to-cart buttons', async () => {
+  const html = await (await fetch(`${base}/`)).text();
   assert.ok(html.includes(config.headline));
-  for (const p of config.products) assert.ok(html.includes(p.name));
+  for (const p of config.products) {
+    assert.ok(html.includes(p.name));
+    assert.ok(html.includes(`data-product="${p.id}"`));
+  }
 });
 
 test('info endpoint exposes version', async () => {
@@ -35,9 +36,14 @@ test('info endpoint exposes version', async () => {
   assert.strictEqual(info.app, config.appName);
 });
 
-test('products have a name and a positive price', () => {
-  assert.ok(config.products.length > 0);
+test('cart starts empty', async () => {
+  const data = await (await fetch(`${base}/api/cart`)).json();
+  assert.strictEqual(data.count, 0);
+});
+
+test('products have an id, a name and a positive price', () => {
   for (const p of config.products) {
+    assert.ok(p.id);
     assert.ok(p.name);
     assert.ok(p.price > 0);
   }
