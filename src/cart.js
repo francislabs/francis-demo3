@@ -4,7 +4,7 @@ const config = require('./config');
 const items = [];
 
 function findProduct(productId) {
-  return config.products.find((p) => p.sku === productId);
+  return config.products.find((p) => p.id === productId);
 }
 
 function addToCart(productId, quantity = 1) {

@@ -57,3 +57,14 @@ test('unknown routes return 404', async () => {
   const res = await fetch(`${base}/nope`);
   assert.strictEqual(res.status, 404);
 });
+
+test('regression: adding a known product to the cart returns 200', async () => {
+  const res = await fetch(`${base}/api/cart`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productId: 'mug', quantity: 1 }),
+  });
+  assert.strictEqual(res.status, 200);
+  const data = await res.json();
+  assert.strictEqual(data.count, 1);
+});
