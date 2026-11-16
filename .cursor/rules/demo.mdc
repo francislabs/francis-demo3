@@ -3,7 +3,7 @@ description: How to implement a Jira story in this demo repo
 alwaysApply: true
 ---
 
-This repo is a live demo of Harness CI/CD to GKE. When asked to implement a Jira story:
+This repo is a live demo of Harness CI/CD to GKE. The full flow is scripted in the `/demo-start` and `/demo-reset` commands (`.cursor/commands/`). When asked to implement a Jira story:
 
 1. Read the story (via the Jira/Atlassian MCP if connected, otherwise from the text pasted in chat).
 2. Create a branch named `feature/<JIRA-KEY>-<short-slug>` from `main` (e.g. `feature/SHOP-1-holiday-promo`). Never commit to `main`. The Jira key in the branch name is how the Harness pipeline finds and updates the story.

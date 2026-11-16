@@ -9,53 +9,54 @@
 | PR trigger | `pr-to-main` runs on PR **create/update** into `main` (not on merge) |
 | Reset | Pipeline `reset-demo` redeploys `main` and moves `SHOP-1` back to To Do |
 | Jira setup | Pipeline `setup-jira-demo` creates or reuses the SHOP project, sprint and story |
-
-## How Jira is updated automatically
-
-The pipeline finds the Jira key (for example `SHOP-1`) in the PR's **source branch name or PR title**. Cursor's branch `feature/SHOP-1-...` covers this.
-
-1. **Pipeline starts:** the story moves to **In Progress** and gets a comment with the PR number and a link to the execution.
-2. **After the GKE deploy:** the story moves to **Done** and gets a comment with the **live app URL**, the version, and the fact that the scans and tests passed.
-3. **Manual runs on `main`:** there is no Jira key, so these steps are skipped.
+| Cursor commands | `/demo-start` and `/demo-reset` (in `.cursor/commands/`) |
 
 ## One-time setup in Cursor
 
-1. **Clone the repo.** In Harness Code, open the repo, click **Clone**, then **Generate Clone Credential**. Clone `https://git.harness.io/iOrKafK-S4atFewx03Owag/default/francis/harness-gke-demo.git`.
-2. **Jira access.** In Cursor settings, add the **Atlassian MCP** server and sign in to `demolabsf.atlassian.net`.
-3. **PR creation.** Either:
-   - add the **Harness MCP** server in Cursor (lets Cursor open the PR itself), or
-   - let Cursor push the branch, then open the PR from the Harness Code UI.
+1. **Clone the repo.** In Harness Code, open the repo, click **Clone**, then **Generate Clone Credential**. Then run `git clone https://git.harness.io/iOrKafK-S4atFewx03Owag/default/francis/harness-gke-demo.git`, open the folder in Cursor, and run `npm ci`.
+2. **Harness MCP.** This is already connected. Check that it can see org `default`, project `francis`.
+3. **Atlassian MCP.** In Cursor, go to **Settings → MCP**, add the **Atlassian** server (from the Cursor MCP marketplace, or URL `https://mcp.atlassian.com/v2/mcp`), and sign in to `demolabsf.atlassian.net`. Then test it by asking Cursor: "show me SHOP-1".
+4. **Commands.** Type `/` in Cursor chat. You should see `demo-start` and `demo-reset`.
 
 ## Before each demo (2 minutes)
 
 - Open the app URL and confirm the **blue** "Welcome to Harness Shop" page.
-- Open the SHOP board and confirm `SHOP-1` is in **To Do** in the active sprint.
-- If either is wrong, run `reset-demo`.
+- Open the SHOP board and confirm `SHOP-1` is in **To Do**.
+- If either is wrong, run `/demo-reset` in Cursor (or the `reset-demo` pipeline in Harness).
 
-## Demo flow
+## Demo flow (all from Cursor)
 
-1. **The sprint.** Open the SHOP Scrum board and show `SHOP-1` in To Do. Talk through the acceptance criteria.
-2. **The baseline.** Open the app URL: blue header, three products, and the version in the footer.
-3. **Implement it in Cursor.** Paste this prompt:
-   > Read Jira issue SHOP-1 and implement it in this repo following `.cursor/rules/demo.mdc`. Create the feature branch, make the change, run the tests, commit, push and open a pull request into main. Don't merge.
+1. **The sprint.** Show the SHOP Scrum board with `SHOP-1` in To Do, and the blue app.
+2. **In Cursor, run `/demo-start SHOP-1`.** Cursor then:
+   - reads the story and its acceptance criteria from Jira,
+   - creates `feature/SHOP-1-...`, edits `src/config.js`, runs the tests,
+   - commits, pushes, and opens the PR in Harness Code through the Harness MCP,
+   - finds the triggered pipeline run and follows it.
+3. **In Harness**, while the pipeline runs:
+   - **Jira Start:** `SHOP-1` moves to **In Progress** with a pipeline comment (flip to the board to show it).
+   - **Build and Secure:** secret scan, dependency scan, unit tests, image push with a new version tag.
+   - **Deploy to GKE:** rolling deploy, then the URL step.
+4. **The reveal.** Refresh the app URL to show the red header, the holiday banner and the Holiday Beanie. Show the board: `SHOP-1` is **Done**, with a comment that links to the live URL.
 
-   Cursor creates `feature/SHOP-1-...`, edits `src/config.js`, and opens the PR.
-4. **Watch Harness.** The PR fires `pr-to-main`. Flip to Jira first: `SHOP-1` has jumped to **In Progress** with a pipeline comment. Then walk through:
-   - the secret scan and dependency scan,
-   - the unit tests,
-   - the image push with a new version tag,
-   - the rolling deploy to GKE.
-5. **The reveal.** Refresh the app URL to show the red header, the holiday banner and the Holiday Beanie. Flip to the board: `SHOP-1` is in **Done**, with a comment linking to the live URL.
+## Reset after the demo (`main` is never changed)
 
-## Reset after the demo (keep `main` untouched)
+In Cursor, run `/demo-reset SHOP-1`. It:
 
-1. In Harness Code, **close the PR without merging** and delete the `feature/SHOP-1-...` branch.
-2. Run the **`reset-demo`** pipeline. It redeploys `main` (blue baseline) and moves `SHOP-1` back to To Do.
-3. In Cursor: `git checkout main && git branch -D feature/SHOP-1-<slug>`.
+- closes the PR without merging,
+- deletes the feature branch remotely and locally,
+- runs `reset-demo`, which redeploys `main` and moves `SHOP-1` back to To Do,
+- verifies the blue page is back.
+
+**Manual fallback:**
+
+1. Close the PR in Harness Code and delete the branch.
+2. Run the `reset-demo` pipeline.
+3. Run `git checkout main && git branch -D feature/SHOP-1-<slug>`.
 
 ## If something goes wrong
 
-- **Pipeline didn't start from the PR:** check that the PR targets `main`, and look in **Triggers → pr-to-main** for the last activation. You can always run the pipeline manually with build type **Pull Request** and the PR number.
-- **Jira didn't move:** make sure the branch name or PR title contains `SHOP-1`. The Jira steps never fail the pipeline; check their step logs.
+- **The push fails:** regenerate the Harness Code clone credential and retry.
+- **The pipeline didn't start from the PR:** check that the PR targets `main`, and look in **Triggers → pr-to-main** for the last activation.
+- **Jira didn't move:** the branch name or PR title must contain `SHOP-1`. The Jira steps never fail the pipeline; check their step logs.
 - **Scans or tests fail:** open the step log. A failing test usually means the change broke `test/app.test.js` assumptions.
 - **No URL printed:** the LoadBalancer IP can take a minute on the first deploy. Run `kubectl -n deploy get svc harness-shop`.
